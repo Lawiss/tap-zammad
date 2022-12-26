@@ -1,0 +1,43 @@
+version: 1
+send_anonymous_usage_stats: false
+project_id: tap-zammad
+default_environment: dev
+plugins:
+  extractors:
+    - name: tap-zammad
+      namespace: tap_zammad
+      pip_url: -e .
+      capabilities:
+        - state
+        - catalog
+        - discover
+      settings:
+        - name: start_date
+          kind: date_iso8601
+        - name: api_base_url
+          kind: string
+        - name: auth_token
+          kind: password
+        - name: retrieve_tickets_tags
+          kind: boolean
+          value: fal
+
+      select:
+        - "*.*"
+      metadata:
+        tickets:
+          replication-method: INCREMENTAL
+          replication-key: updated_at
+        users:
+          replication-method: INCREMENTAL
+          replication-key: updated_at
+
+  loaders:
+    - name: target-jsonl
+      variant: andyh1203
+      pip_url: target-jsonl
+    - name: target-postgres
+      variant: transferwise
+      pip_url: git+https://github.com/transferwise/pipelinewise-target-postgres/@refs/pull/97/head
+environments:
+  - name: dev
