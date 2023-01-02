@@ -1,9 +1,11 @@
 """Stream type classes for tap-zammad."""
+from datetime import datetime, timedelta
 
-from typing import Any, Iterable, Optional
+from typing import Any, Dict, Iterable, Optional
 
 import requests
 from singer_sdk import typing as th  # JSON Schema typing helpers
+from singer_sdk.helpers.jsonpath import extract_jsonpath
 
 from tap_zammad.client import ZammadStream
 
@@ -84,13 +86,39 @@ class TicketsStream(ZammadStream):
     def get_next_page_token(
         self, response: requests.Response, previous_token: Optional[Any]
     ) -> Optional[Any]:
-        """Return a token for identifying next page or None if no more pages."""
+        """Return a token for identifying next page or None if no more pages.
+        As Zammad limit the number of results to 10k, a strategy is adopted to
+        be able to continue the extraction even if the limit has been reached.
+        """
 
         if previous_token is None:
             return 2
 
         if response.json()["tickets_count"] < self.max_per_page:
             return None
+
+        # Zammad search is limited to 10k results, thus if we reach this limit,
+        # we take the "updated_at" value of the last ticket at the last page as new
+        # incremental filter value and we reset the page number to start new iteration.
+        match previous_token:
+            case int(previous_token) if (
+                (previous_token * self.MAX_PER_PAGE) % 10_000
+            ) == 0:
+                last_datetime = self.get_last_updated_at_from_reponse(
+                    response
+                ) - timedelta(days=1)
+
+                return (last_datetime.strftime("%Y-%m-%d"), 1)
+            case (current_updated_at, current_page):
+                if ((current_page * self.MAX_PER_PAGE) % 10_000) == 0:
+
+                    last_datetime = self.get_last_updated_at_from_reponse(
+                        response
+                    ) - timedelta(days=1)
+
+                    return (last_datetime.strftime("%Y-%m-%d"), 1)
+                else:
+                    return (current_updated_at, current_page + 1)
 
         return previous_token + 1
 
@@ -100,6 +128,15 @@ class TicketsStream(ZammadStream):
         return {
             "ticket_id": record["id"],
         }
+
+    def get_last_updated_at_from_reponse(self, response: requests.Response):
+        json = response.json()
+        records = list(extract_jsonpath(self.records_jsonpath, input=json))
+        last_datetime = records[-1]["updated_at"]
+        last_datetime = datetime.strptime(
+            last_datetime.split(".")[0], "%Y-%m-%dT%H:%M:%S"
+        )
+        return last_datetime
 
 
 class TagsStream(ZammadStream):

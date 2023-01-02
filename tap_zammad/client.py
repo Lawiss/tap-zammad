@@ -1,5 +1,6 @@
 """REST client handling, including ZammadStream base class."""
 
+from datetime import timedelta
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -39,15 +40,24 @@ class ZammadStream(RESTStream):
         params: dict = {}
 
         params["per_page"] = self.MAX_PER_PAGE
-        params["page"] = 1
 
-        if next_page_token:
-            params["page"] = next_page_token
+        params["page"] = 1
 
         params["query"] = "updated_at:>0"
         since = self.get_starting_timestamp(context)
+        # Zammad seems to treat a timestamp as if it was one hour in the past (eg. 11H00 is treat as 10:00)
+        # so we have to add one hour to UTC timestamp to have the desired datetime filter
+        zammad_since = since - timedelta(days=1)
         if since is not None:
-            params["query"] = f"updated_at:>{int(since.timestamp()*1000)}"
+            params["query"] = f"updated_at:>{zammad_since:%Y-%m-%d}"
+
+        match next_page_token:
+            case int(next_page_token):
+                params["page"] = next_page_token
+            case (current_updated_at, next_page):
+                # This part is to overcome the Zammad 10k results limit.
+                params["query"] = f"updated_at:>{current_updated_at}"
+                params["page"] = next_page
 
         if self.replication_key:
             params["order_by"] = "asc"
