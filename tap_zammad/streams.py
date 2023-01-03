@@ -80,7 +80,6 @@ class TicketsStream(ZammadStream):
         th.Property("last_close_at", th.DateTimeType),
         th.Property("article_ids", th.ArrayType(th.IntegerType)),
         th.Property("ticket_time_accounting_ids", th.ArrayType(th.IntegerType)),
-        th.Property("tags", th.ArrayType(th.StringType)),
     ).to_dict()
 
     def get_next_page_token(
@@ -160,7 +159,10 @@ class TagsStream(ZammadStream):
         return result
 
     def parse_response(self, response: requests.Response) -> Iterable[dict]:
-        return [response.json()]
+        response_json = response.json()
+        if len(response_json["tags"]) == 0:
+            return []
+        return [response_json]
 
 
 class UsersStream(ZammadStream):

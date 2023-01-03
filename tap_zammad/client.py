@@ -47,8 +47,8 @@ class ZammadStream(RESTStream):
         since = self.get_starting_timestamp(context)
         # Zammad seems to treat a timestamp as if it was one hour in the past (eg. 11H00 is treat as 10:00)
         # so we have to add one hour to UTC timestamp to have the desired datetime filter
-        zammad_since = since - timedelta(days=1)
         if since is not None:
+            zammad_since = since - timedelta(days=1)
             params["query"] = f"updated_at:>{zammad_since:%Y-%m-%d}"
 
         match next_page_token:
