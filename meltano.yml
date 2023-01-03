@@ -18,9 +18,6 @@ plugins:
           kind: string
         - name: auth_token
           kind: password
-        - name: retrieve_tickets_tags
-          kind: boolean
-          value: fal
 
       select:
         - "*.*"
