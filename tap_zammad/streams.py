@@ -1,15 +1,12 @@
 """Stream type classes for tap-zammad."""
 from datetime import datetime, timedelta
-
-from typing import Any, Dict, Iterable, Optional
+from typing import Any, Iterable, Optional
 
 import requests
-from singer_sdk import typing as th  # JSON Schema typing helpers
+from singer_sdk import typing as th
 from singer_sdk.helpers.jsonpath import extract_jsonpath
 
 from tap_zammad.client import ZammadStream
-
-# SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
 
 
 class TicketsStream(ZammadStream):
