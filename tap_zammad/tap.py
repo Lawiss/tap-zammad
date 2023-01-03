@@ -38,7 +38,8 @@ class TapZammad(Tap):
             th.BooleanType,
             description=(
                 "Wether to retrieve tags for a ticket. "
-                "Can significantly slow sync process as tags endpoint has to be requested for each ticket."
+                "Can significantly slow sync process as tags endpoint"
+                "has to be requested for each ticket."
             ),
             default=False,
         ),

@@ -45,19 +45,19 @@ class ZammadStream(RESTStream):
 
         params["query"] = "updated_at:>0"
         since = self.get_starting_timestamp(context)
-        # Zammad seems to treat a timestamp as if it was one hour in the past (eg. 11H00 is treat as 10:00)
+        # Zammad seems to treat a timestamp as if it was
+        # one hour in the past (eg. 11H00 is treat as 10:00)
         # so we have to add one hour to UTC timestamp to have the desired datetime filter
         if since is not None:
             zammad_since = since - timedelta(days=1)
             params["query"] = f"updated_at:>{zammad_since:%Y-%m-%d}"
 
-        match next_page_token:
-            case int(next_page_token):
-                params["page"] = next_page_token
-            case (current_updated_at, next_page):
-                # This part is to overcome the Zammad 10k results limit.
-                params["query"] = f"updated_at:>{current_updated_at}"
-                params["page"] = next_page
+        if isinstance(next_page_token, int):
+            params["page"] = next_page_token
+        elif isinstance(next_page_token, tuple):
+            current_updated_at, next_page = next_page_token
+            params["query"] = f"updated_at:>{current_updated_at}"
+            params["page"] = next_page
 
         if self.replication_key:
             params["order_by"] = "asc"
