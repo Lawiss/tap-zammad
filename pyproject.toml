@@ -10,7 +10,7 @@ keywords = [
 license = "Apache 2.0"
 
 [tool.poetry.dependencies]
-python = "<3.11,>=3.7.1"
+python = "<3.11,>=3.8.1"
 requests = "^2.25.1"
 singer-sdk = "^0.16.0"
 
@@ -30,7 +30,7 @@ multi_line_output = 3 # Vertical Hanging Indent
 src_paths = "tap_zammad"
 
 [build-system]
-requires = ["poetry-core>=1.0.8"]
+requires = ["poetry-core>=1.4.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
