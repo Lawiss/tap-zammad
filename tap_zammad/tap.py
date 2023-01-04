@@ -21,6 +21,7 @@ class TapZammad(Tap):
             th.StringType,
             required=True,
             description="The token to authenticate against the Zammad API",
+            secret=True,
         ),
         th.Property(
             "start_date",
@@ -32,16 +33,6 @@ class TapZammad(Tap):
             th.StringType,
             description="The base url of the Zammad API",
             required=True,
-        ),
-        th.Property(
-            "retrieve_tickets_tags",
-            th.BooleanType,
-            description=(
-                "Wether to retrieve tags for a ticket. "
-                "Can significantly slow sync process as tags"
-                " endpoint has to be requested for each ticket."
-            ),
-            default=False,
         ),
     ).to_dict()
 
