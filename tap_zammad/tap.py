@@ -33,16 +33,6 @@ class TapZammad(Tap):
             description="The base url of the Zammad API",
             required=True,
         ),
-        th.Property(
-            "retrieve_tickets_tags",
-            th.BooleanType,
-            description=(
-                "Wether to retrieve tags for a ticket. "
-                "Can significantly slow sync process as tags"
-                " endpoint has to be requested for each ticket."
-            ),
-            default=False,
-        ),
     ).to_dict()
 
     def discover_streams(self) -> List[Stream]:
