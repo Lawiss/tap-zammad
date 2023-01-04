@@ -21,6 +21,7 @@ class TapZammad(Tap):
             th.StringType,
             required=True,
             description="The token to authenticate against the Zammad API",
+            secret=True,
         ),
         th.Property(
             "start_date",
