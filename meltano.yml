@@ -18,7 +18,6 @@ plugins:
           kind: string
         - name: auth_token
           kind: password
-
       select:
         - "*.*"
       metadata:
