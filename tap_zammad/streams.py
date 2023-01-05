@@ -72,6 +72,7 @@ class TicketsStream(ZammadStream):
         th.Property("pending_time", th.DurationType),
         th.Property("type", th.StringType),
         th.Property("time_unit", th.StringType),
+        th.Property("preferences", th.ObjectType(additional_properties=True)),
         th.Property("updated_by_id", th.IntegerType),
         th.Property("created_by_id", th.IntegerType),
         th.Property("created_at", th.DateTimeType, required=True),
@@ -124,9 +125,7 @@ class TicketsStream(ZammadStream):
     def get_child_context(self, record: dict, context: dict | None) -> dict:
         """Perform post processing, including queuing up any child stream types."""
         # Ensure child state record(s) are created
-        return {
-            "ticket_id": record["id"],
-        }
+        return {"ticket_id": record["id"]}
 
     def get_last_updated_at_from_reponse(self, response: requests.Response) -> datetime:
         """Get the value of the updated_at field of the last ticket in the response"""
@@ -146,6 +145,7 @@ class TagsStream(ZammadStream):
     path = "/tags?object=Ticket&o_id={ticket_id}"
     primary_keys = ["ticket_id"]
     replication_key = None
+
     schema = th.PropertiesList(
         th.Property("ticket_id", th.IntegerType, required=True),
         th.Property("tags", th.ArrayType(th.StringType)),
@@ -208,6 +208,7 @@ class UsersStream(ZammadStream):
         th.Property("out_of_office_start_at", th.DateTimeType),
         th.Property("out_of_office_end_at", th.DateTimeType),
         th.Property("out_of_office_replacement_id", th.IntegerType),
+        th.Property("preferences", th.ObjectType(additional_properties=True)),
         th.Property("updated_by_id", th.IntegerType),
         th.Property("created_by_id", th.IntegerType),
         th.Property("created_at", th.DateTimeType, required=True),
@@ -216,7 +217,7 @@ class UsersStream(ZammadStream):
         th.Property("organization_ids", th.ArrayType(th.IntegerType)),
         th.Property("authorization_ids", th.ArrayType(th.IntegerType)),
         th.Property("karma_user_ids", th.ArrayType(th.IntegerType)),
-        th.Property("group_ids", th.ObjectType(additional_properties=th.IntegerType)),
+        th.Property("group_ids", th.ObjectType(additional_properties=True)),
     ).to_dict()
 
     def get_next_page_token(
