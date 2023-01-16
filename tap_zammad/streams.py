@@ -232,3 +232,46 @@ class UsersStream(ZammadStream):
             return 2
 
         return previous_token + 1
+
+
+class GroupStream(ZammadStream):
+    """Define group stream."""
+
+    name = "group"
+    path = "/groups/"
+    max_per_page = 50
+    primary_keys = ["id"]
+    replication_key = "updated_at"
+    records_jsonpath = "$[*]"
+
+    schema = th.PropertiesList(
+        th.Property("id", th.IntegerType, required=True),
+        th.Property("signature_id", th.IntegerType),
+        th.Property("email_address_id", th.IntegerType),
+        th.Property("name", th.StringType),
+        th.Property("assignment_timeout", th.IntegerType),
+        th.Property("follow_up_possible", th.StringType),
+        th.Property("follow_up_assignment", th.BooleanType),
+        th.Property("active", th.BooleanType),
+        th.Property("note", th.StringType),
+        th.Property("updated_by_id", th.IntegerType),
+        th.Property("created_by_id", th.IntegerType),
+        th.Property("created_at", th.DateTimeType, required=True),
+        th.Property("updated_at", th.DateTimeType, required=True),
+        th.Property("shared_drafts", th.BooleanType),
+        th.Property("reopen_time_in_days", th.IntegerType),
+        th.Property("user_ids", th.ArrayType(th.IntegerType)),
+    ).to_dict()
+
+    def get_next_page_token(
+        self, response: requests.Response, previous_token: Optional[Any]
+    ) -> Optional[Any]:
+        """Return a token for identifying next page or None if no more pages."""
+
+        if len(response.json()) < self.max_per_page:
+            return None
+
+        if previous_token is None:
+            return 2
+
+        return previous_token + 1
