@@ -234,10 +234,10 @@ class UsersStream(ZammadStream):
         return previous_token + 1
 
 
-class GroupStream(ZammadStream):
+class GroupsStream(ZammadStream):
     """Define group stream."""
 
-    name = "group"
+    name = "groups"
     path = "/groups/"
     max_per_page = 50
     primary_keys = ["id"]
