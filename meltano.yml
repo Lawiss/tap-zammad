@@ -27,6 +27,8 @@ plugins:
         users:
           replication-method: INCREMENTAL
           replication-key: updated_at
+        groups:
+          replication-method: FULL_TABLE
 
   loaders:
     - name: target-jsonl

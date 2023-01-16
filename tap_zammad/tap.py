@@ -5,9 +5,9 @@ from typing import List
 from singer_sdk import Stream, Tap
 from singer_sdk import typing as th
 
-from tap_zammad.streams import GroupStream, TagsStream, TicketsStream, UsersStream
+from tap_zammad.streams import GroupsStream, TagsStream, TicketsStream, UsersStream
 
-STREAM_TYPES = [TicketsStream, TagsStream, UsersStream, GroupStream]
+STREAM_TYPES = [TicketsStream, TagsStream, UsersStream, GroupsStream]
 
 
 class TapZammad(Tap):
