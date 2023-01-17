@@ -145,12 +145,13 @@ class TagsStream(ZammadStream):
     path = "/tags?object=Ticket&o_id={ticket_id}"
     primary_keys = ["ticket_id"]
     replication_key = None
+    state_partitioning_keys = []
+    parent_stream_type = TicketsStream  # Stream should wait for parents to complete.
 
     schema = th.PropertiesList(
         th.Property("ticket_id", th.IntegerType, required=True),
         th.Property("tags", th.ArrayType(th.StringType)),
     ).to_dict()
-    parent_stream_type = TicketsStream  # Stream should wait for parents to complete.
 
     def get_url_params(
         self, context: dict | None, next_page_token: str | None
@@ -166,6 +167,10 @@ class TagsStream(ZammadStream):
         if len(response_json["tags"]) == 0:
             return []
         return [response_json]
+
+    def post_process(self, row: dict, context: dict | None = None) -> dict | None:
+        row.update(context)
+        return row
 
 
 class UsersStream(ZammadStream):
