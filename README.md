@@ -2,13 +2,11 @@
 
 `tap-zammad` is a Singer tap for Zammad.
 This tap allow to extract data from Zammad API.
-Currently, this tap support extraction of Tickets data (with associated tags) and Users data.
+Currently, this tap support extraction of Tickets data (with associated tags), Groups data and Users data.
 
 Built with the [Meltano Tap SDK](https://sdk.meltano.com) for Singer Taps.
 
-<!--
 
-Developer TODO: Update the below as needed to correctly describe the install procedure. For instance, if you do not have a PyPi repo, or if you want users to directly install from your git repo, you can modify this step as appropriate.
 
 ## Installation
 
@@ -18,9 +16,6 @@ Install from PyPi:
 pipx install tap-zammad
 ```
 
-
-
--->
 
 Install from GitHub:
 
@@ -58,6 +53,35 @@ tap is available by running:
 
 ```bash
 tap-zammad --about
+```
+
+To use the incremental mode, you should add the proper plugin capabilities to your `meltano.yml` file.
+Example of configuration of `meltano.yml`.
+
+```yaml
+    - name: tap-zammad
+      namespace: tap_zammad
+      pip_url: tap-zammad #You can use here a github link
+      executable: tap-zammad
+      capabilities:
+        - state
+        - catalog
+        - discover
+      config:
+        auth_token:
+        api_base_url:
+        start_date: "2022-12-01"
+      select:
+        - "*.*"
+      metadata:
+        tickets:
+          replication-method: INCREMENTAL
+          replication-key: updated_at
+        users:
+          replication-method: INCREMENTAL
+          replication-key: updated_at
+        groups:
+          replication-method: FULL_TABLE
 ```
 
 ### Configure using environment variables
