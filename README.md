@@ -1,8 +1,8 @@
 # tap-zammad
 
 `tap-zammad` is a Singer tap for Zammad.
-This tap allow to extract data from Zammad API.
-Currently, this tap support extraction of Tickets data (with associated tags), Groups data and Users data.
+This tap allows to extract data from Zammad API.
+Currently, this tap supports extraction of Tickets (with associated tags), Groups, Organizations and Users data.
 
 Built with the [Meltano Tap SDK](https://sdk.meltano.com) for Singer Taps.
 
