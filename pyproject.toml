@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tap-zammad"
-version = "0.0.2"
+version = "0.0.3"
 description = "tap-zammad is a Singer tap for Zammad, built with the Meltano SDK for Singer Taps."
 authors = ["Luis Ventura"]
 keywords = [
