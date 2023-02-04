@@ -1,12 +1,10 @@
 """Stream type classes for tap-zammad."""
 from __future__ import annotations
 
-from datetime import datetime, timedelta
 from typing import Any, Iterable, Optional
 
 import requests
 from singer_sdk import typing as th
-from singer_sdk.helpers.jsonpath import extract_jsonpath
 
 from tap_zammad.client import ZammadStream
 
@@ -15,7 +13,6 @@ class TicketsStream(ZammadStream):
     """Define tickets stream."""
 
     name = "tickets"
-    max_per_page = 200
     path = "/tickets/search"
     primary_keys = ["id"]
     replication_key = "updated_at"
@@ -82,60 +79,13 @@ class TicketsStream(ZammadStream):
         th.Property("ticket_time_accounting_ids", th.ArrayType(th.IntegerType)),
     ).to_dict()
 
-    def get_next_page_token(
-        self, response: requests.Response, previous_token: Optional[Any]
-    ) -> Optional[Any]:
-        """Return a token for identifying next page or None if no more pages.
-        As Zammad limit the number of results to 10k, a strategy is adopted to
-        be able to continue the extraction even if the limit has been reached.
-        """
-
-        if previous_token is None:
-            return 2
-
-        if response.json()["tickets_count"] < self.max_per_page:
-            return None
-
-        # Zammad search is limited to 10k results, thus if we reach this limit,
-        # we take the "updated_at" value of the last ticket at the last page as new
-        # incremental filter value and we reset the page number to start new iteration.
-        if (
-            isinstance(previous_token, int)
-            and ((previous_token * self.MAX_PER_PAGE) % 10_000) == 0
-        ):
-            last_datetime = self.get_last_updated_at_from_reponse(response) - timedelta(
-                days=1
-            )
-
-            return (last_datetime.strftime("%Y-%m-%d"), 1)
-        elif isinstance(previous_token, tuple):
-            current_updated_at, current_page = previous_token
-            if ((current_page * self.MAX_PER_PAGE) % 10_000) == 0:
-
-                last_datetime = self.get_last_updated_at_from_reponse(
-                    response
-                ) - timedelta(days=1)
-                return (last_datetime.strftime("%Y-%m-%d"), 1)
-
-            else:
-                return (current_updated_at, current_page + 1)
-
-        return previous_token + 1
+    def get_response_length(self, response: requests.Response) -> int:
+        return response.json()["tickets_count"]
 
     def get_child_context(self, record: dict, context: dict | None) -> dict:
         """Perform post processing, including queuing up any child stream types."""
         # Ensure child state record(s) are created
         return {"ticket_id": record["id"]}
-
-    def get_last_updated_at_from_reponse(self, response: requests.Response) -> datetime:
-        """Get the value of the updated_at field of the last ticket in the response"""
-        json = response.json()
-        records = list(extract_jsonpath(self.records_jsonpath, input=json))
-        last_datetime = records[-1]["updated_at"]
-        last_datetime = datetime.strptime(
-            last_datetime.split(".")[0], "%Y-%m-%dT%H:%M:%S"
-        )
-        return last_datetime
 
 
 class TagsStream(ZammadStream):
@@ -177,7 +127,6 @@ class UsersStream(ZammadStream):
     """Define user stream."""
 
     name = "users"
-    max_per_page = 100
     path = "/users/search"
     primary_keys = ["id"]
     replication_key = "updated_at"
@@ -225,18 +174,45 @@ class UsersStream(ZammadStream):
         th.Property("group_ids", th.ObjectType(additional_properties=True)),
     ).to_dict()
 
-    def get_next_page_token(
-        self, response: requests.Response, previous_token: Optional[Any]
-    ) -> Optional[Any]:
-        """Return a token for identifying next page or None if no more pages."""
 
-        if len(response.json()) < self.max_per_page:
-            return None
+class OrganizationsStream(ZammadStream):
+    """Define organization stream."""
 
-        if previous_token is None:
-            return 2
+    name = "organizations"
+    path = "/organizations/search"
+    primary_keys = ["id"]
+    replication_key = "updated_at"
+    records_jsonpath = "$[*]"
 
-        return previous_token + 1
+    schema = th.PropertiesList(
+        th.Property(
+            "id",
+            th.IntegerType,
+            description="The Zammad organization's ID",
+            required=True,
+        ),
+        th.Property("name", th.StringType),
+        th.Property("shared", th.BooleanType),
+        th.Property("domain", th.StringType),
+        th.Property("domain_assignment", th.BooleanType),
+        th.Property("active", th.BooleanType),
+        th.Property("note", th.StringType),
+        th.Property(
+            "updated_by_id",
+            th.IntegerType,
+        ),
+        th.Property(
+            "created_by_id",
+            th.IntegerType,
+        ),
+        th.Property("created_at", th.DateTimeType),
+        th.Property(
+            "updated_at",
+            th.DateTimeType,
+        ),
+        th.Property("member_ids", th.ArrayType(th.IntegerType)),
+        th.Property("secondary_member_ids", th.ArrayType(th.IntegerType)),
+    ).to_dict()
 
 
 class GroupsStream(ZammadStream):

@@ -37,6 +37,6 @@ plugins:
       pip_url: target-jsonl
     - name: target-postgres
       variant: transferwise
-      pip_url: git+https://github.com/transferwise/pipelinewise-target-postgres/@refs/pull/97/head
+      pip_url: "pipelinewise-target-postgres==2.1.2"
 environments:
   - name: dev
