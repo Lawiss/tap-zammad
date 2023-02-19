@@ -84,6 +84,9 @@ Example of configuration of `meltano.yml`.
           replication-key: updated_at
         groups:
           replication-method: FULL_TABLE
+        organizations:
+          replication-method: INCREMENTAL
+          replication-key: updated_at
 ```
 
 ### Configure using environment variables
