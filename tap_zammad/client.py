@@ -1,14 +1,15 @@
 """REST client handling, including ZammadStream base class."""
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
+import requests
 from memoization import cached
 from singer_sdk.authenticators import SimpleAuthenticator
-from singer_sdk.helpers.jsonpath import extract_jsonpath
 from singer_sdk.streams import RESTStream
-import requests
+
+from tap_zammad.paginators import ZammadAPIPaginator
 
 SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
 
@@ -35,11 +36,18 @@ class ZammadStream(RESTStream):
             },
         )
 
-    def get_url_params(
-        self, context: Optional[dict], next_page_token: Optional[Any]
-    ) -> Dict[str, Any]:
-        """Return a dictionary of values to be used in URL parameterization."""
-        params: dict = {}
+    def get_new_paginator(self):
+        return ZammadAPIPaginator(
+            start_value=None,
+            records_jsonpath=self.records_jsonpath,
+            max_per_page=self.MAX_PER_PAGE,
+        )
+
+    def get_url_params(self, context, next_page_token) -> dict:
+        if next_page_token is not None:
+            return next_page_token
+
+        params = {}
 
         params["per_page"] = self.MAX_PER_PAGE
 
@@ -54,68 +62,8 @@ class ZammadStream(RESTStream):
             zammad_since = since - timedelta(days=1)
             params["query"] = f"updated_at:>{zammad_since:%Y-%m-%d}"
 
-        if isinstance(next_page_token, int):
-            params["page"] = next_page_token
-        elif isinstance(next_page_token, tuple):
-            current_updated_at, next_page = next_page_token
-            params["query"] = f"updated_at:>{current_updated_at}"
-            params["page"] = next_page
-
         if self.replication_key:
             params["order_by"] = "asc"
             params["sort_by"] = self.replication_key
 
         return params
-
-    def get_next_page_token(
-        self, response: requests.Response, previous_token: Optional[Any]
-    ) -> Optional[Any]:
-        """Return a token for identifying next page or None if no more pages.
-        As Zammad limit the number of results to 10k, a strategy is adopted to
-        be able to continue the extraction even if the limit has been reached.
-        """
-
-        if previous_token is None:
-            return 2
-
-        if self.get_response_length(response) < self.MAX_PER_PAGE:
-            return None
-
-        # Zammad search is limited to 10k results, thus if we reach this limit,
-        # we take the "updated_at" value of the last ticket at the last page as new
-        # incremental filter value and we reset the page number to start new iteration.
-        if (
-            isinstance(previous_token, int)
-            and ((previous_token * self.MAX_PER_PAGE) % 10_000) == 0
-        ):
-            last_datetime = self.get_last_updated_at_from_reponse(response) - timedelta(
-                days=1
-            )
-
-            return (last_datetime.strftime("%Y-%m-%d"), 1)
-        elif isinstance(previous_token, tuple):
-            current_updated_at, current_page = previous_token
-            if ((current_page * self.MAX_PER_PAGE) % 10_000) == 0:
-
-                last_datetime = self.get_last_updated_at_from_reponse(
-                    response
-                ) - timedelta(days=1)
-                return (last_datetime.strftime("%Y-%m-%d"), 1)
-
-            else:
-                return (current_updated_at, current_page + 1)
-
-        return previous_token + 1
-
-    def get_last_updated_at_from_reponse(self, response: requests.Response) -> datetime:
-        """Get the value of the updated_at field of the last object in the response"""
-        json = response.json()
-        records = list(extract_jsonpath(self.records_jsonpath, input=json))
-        last_datetime = records[-1]["updated_at"]
-        last_datetime = datetime.strptime(
-            last_datetime.split(".")[0], "%Y-%m-%dT%H:%M:%S"
-        )
-        return last_datetime
-
-    def get_response_length(self, response: requests.Response) -> int:
-        return len(list(extract_jsonpath(self.records_jsonpath, input=response.json())))
