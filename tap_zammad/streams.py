@@ -103,6 +103,7 @@ class TagsStream(ZammadStream):
     ).to_dict()
 
     def get_new_paginator(self):
+        """Return a `SinglePagePaginator`as this endpoint does not have pagination capabilities."""
         return SinglePagePaginator()
 
     def get_url_params(

@@ -2,9 +2,7 @@
 
 from datetime import timedelta
 from pathlib import Path
-from typing import Any, Dict
 
-import requests
 from memoization import cached
 from singer_sdk.authenticators import SimpleAuthenticator
 from singer_sdk.streams import RESTStream
@@ -37,6 +35,7 @@ class ZammadStream(RESTStream):
         )
 
     def get_new_paginator(self):
+        """Return a custom paginator for the Zammad API."""
         return ZammadAPIPaginator(
             start_value=None,
             records_jsonpath=self.records_jsonpath,
@@ -44,6 +43,19 @@ class ZammadStream(RESTStream):
         )
 
     def get_url_params(self, context, next_page_token) -> dict:
+        """Create the initial URL parameters if `next_page_token` is `None`,
+        or use its value for the next iteration (value from the paginator).
+
+        Args:
+            context: A dictionary containing information about the execution context
+                of the plugin.
+            next_page_token: A dictionary containing the url params to be used
+                for the current iteration, or `None` if it's the first iteration.
+
+        Returns:
+            A dictionary containing the URL parameters to be used for the current iteration.
+
+        """
         if next_page_token is not None:
             return next_page_token
 
