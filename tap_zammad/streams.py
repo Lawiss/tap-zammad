@@ -1,10 +1,12 @@
 """Stream type classes for tap-zammad."""
 from __future__ import annotations
 
-from typing import Any, Iterable, Optional
+from typing import Any, Dict, Iterable, Optional
+from datetime import timedelta
 
 import requests
 from singer_sdk import typing as th
+from singer_sdk.pagination import SinglePagePaginator
 
 from tap_zammad.client import ZammadStream
 
@@ -79,9 +81,6 @@ class TicketsStream(ZammadStream):
         th.Property("ticket_time_accounting_ids", th.ArrayType(th.IntegerType)),
     ).to_dict()
 
-    def get_response_length(self, response: requests.Response) -> int:
-        return response.json()["tickets_count"]
-
     def get_child_context(self, record: dict, context: dict | None) -> dict:
         """Perform post processing, including queuing up any child stream types."""
         # Ensure child state record(s) are created
@@ -102,6 +101,10 @@ class TagsStream(ZammadStream):
         th.Property("ticket_id", th.IntegerType, required=True),
         th.Property("tags", th.ArrayType(th.StringType)),
     ).to_dict()
+
+    def get_new_paginator(self):
+        """Return a `SinglePagePaginator`as this endpoint does not have pagination capabilities."""
+        return SinglePagePaginator()
 
     def get_url_params(
         self, context: dict | None, next_page_token: str | None

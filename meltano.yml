@@ -30,6 +30,9 @@ plugins:
           replication-key: updated_at
         groups:
           replication-method: FULL_TABLE
+        organizations:
+          replication-method: INCREMENTAL
+          replication-key: updated_at
 
   loaders:
     - name: target-jsonl
