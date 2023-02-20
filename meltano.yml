@@ -17,8 +17,10 @@ plugins:
           value: "2022-01-12"
         - name: api_base_url
           kind: string
+          description: The base url of the Zammad API e.g. `https://example.zammad.com/api/v1/`
         - name: auth_token
           kind: password
+          description: The token to authenticate against the Zammad API
       select:
         - "*.*"
       metadata:

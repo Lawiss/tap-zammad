@@ -41,7 +41,7 @@ tap-zammad --about --format=markdown
 |:--------------------|:--------:|:-------:|:------------|
 | auth_token          | True     | None    | The token to authenticate against the Zammad API |
 | start_date          | False    | None    | The earliest record date to sync |
-| api_url             | True     | None    | The base url of the Zammad API e.g. `https://example.zammad.com/api/v1/` |
+| api_base_url        | True     | None    | The base url of the Zammad API e.g. `https://example.zammad.com/api/v1/` |
 | stream_maps         | False    | None    | Config object for stream maps capability. For more information check out [Stream Maps](https://sdk.meltano.com/en/latest/stream_maps.html). |
 | stream_map_config   | False    | None    | User-defined config values to be used within map expressions. |
 | flattening_enabled  | False    | None    | 'True' to enable schema flattening and automatically expand nested properties. |
