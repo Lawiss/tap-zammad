@@ -28,20 +28,12 @@ pipx install git+https://github.com/entropeak/tap-zammad.git@main
 
 ### Accepted Config Options
 
-<!--
-Developer TODO: Provide a list of config options accepted by the tap.
 
-This section can be created by copy-pasting the CLI output from:
-
-```
-tap-zammad --about --format=markdown
-```
--->
 | Setting             | Required | Default | Description |
 |:--------------------|:--------:|:-------:|:------------|
 | auth_token          | True     | None    | The token to authenticate against the Zammad API |
 | start_date          | False    | None    | The earliest record date to sync |
-| api_url             | True     | None    | The base url of the Zammad API e.g. `https://example.zammad.com/api/v1/` |
+| api_base_url        | True     | None    | The base url of the Zammad API e.g. `https://example.zammad.com/api/v1/` |
 | stream_maps         | False    | None    | Config object for stream maps capability. For more information check out [Stream Maps](https://sdk.meltano.com/en/latest/stream_maps.html). |
 | stream_map_config   | False    | None    | User-defined config values to be used within map expressions. |
 | flattening_enabled  | False    | None    | 'True' to enable schema flattening and automatically expand nested properties. |
@@ -142,11 +134,6 @@ poetry run tap-zammad --help
 _**Note:** This tap will work in any Singer environment and does not require Meltano.
 Examples here are for convenience and to streamline end-to-end orchestration scenarios._
 
-<!--
-Developer TODO:
-Your project comes with a custom `meltano.yml` project file already created. Open the `meltano.yml` and follow any "TODO" items listed in
-the file.
--->
 
 Next, install Meltano (if you haven't already) and any needed plugins:
 

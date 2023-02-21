@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from urllib.parse import parse_qs, urlparse
 
 from requests import Response
@@ -30,7 +30,7 @@ class ZammadAPIPaginator(BaseAPIPaginator):
         self.records_jsonpath = records_jsonpath
         self.max_per_page = max_per_page
 
-    def get_next_url_params(self, response: Response) -> dict | None:
+    def get_next_url_params(self, response: Response) -> Optional[dict]:
         """Use received response to update url parameters with next page
         and `updated_at` offset if necessary
 
@@ -62,7 +62,7 @@ class ZammadAPIPaginator(BaseAPIPaginator):
 
         return params
 
-    def get_next(self, response: Response) -> Dict[str, Any]:
+    def get_next(self, response: Response) -> Optional[Dict[str, Any]]:
         """Get the next pagination params from the API response.
 
         Args:
@@ -105,8 +105,8 @@ class ZammadAPIPaginator(BaseAPIPaginator):
             response: API response object.
 
         Returns:
-            A datetime with the value of the `updated_at` field of the last object returned.
-
+            A datetime with the value of the `updated_at` field
+            of the last object returned.
         """
 
         json = response.json()

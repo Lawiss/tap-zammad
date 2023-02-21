@@ -7,10 +7,10 @@ from singer_sdk import typing as th
 
 from tap_zammad.streams import (
     GroupsStream,
+    OrganizationsStream,
     TagsStream,
     TicketsStream,
     UsersStream,
-    OrganizationsStream,
 )
 
 STREAM_TYPES = [
