@@ -1,8 +1,7 @@
 """Stream type classes for tap-zammad."""
 from __future__ import annotations
 
-from typing import Any, Dict, Iterable, Optional
-from datetime import timedelta
+from typing import Any, Iterable, Optional
 
 import requests
 from singer_sdk import typing as th
@@ -81,7 +80,7 @@ class TicketsStream(ZammadStream):
         th.Property("ticket_time_accounting_ids", th.ArrayType(th.IntegerType)),
     ).to_dict()
 
-    def get_child_context(self, record: dict, context: dict | None) -> dict:
+    def get_child_context(self, record: dict, context: Optional[dict]) -> dict:
         """Perform post processing, including queuing up any child stream types."""
         # Ensure child state record(s) are created
         return {"ticket_id": record["id"]}
@@ -103,11 +102,13 @@ class TagsStream(ZammadStream):
     ).to_dict()
 
     def get_new_paginator(self):
-        """Return a `SinglePagePaginator`as this endpoint does not have pagination capabilities."""
+        """Return a `SinglePagePaginator` as this endpoint
+        does not have pagination capabilities.
+        """
         return SinglePagePaginator()
 
     def get_url_params(
-        self, context: dict | None, next_page_token: str | None
+        self, context: Optional[dict], next_page_token: Optional[str]
     ) -> dict[str, Any]:
         """Return a dictionary of values to be used in parameterization."""
         result = super().get_url_params(context, next_page_token)
@@ -121,7 +122,7 @@ class TagsStream(ZammadStream):
             return []
         return [response_json]
 
-    def post_process(self, row: dict, context: dict | None = None) -> dict | None:
+    def post_process(self, row: dict, context: Optional[dict] = None) -> Optional[dict]:
         row.update(context)
         return row
 
