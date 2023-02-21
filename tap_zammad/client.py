@@ -1,15 +1,12 @@
 """REST client handling, including ZammadStream base class."""
 
 from datetime import timedelta
-from pathlib import Path
 
 from memoization import cached
 from singer_sdk.authenticators import SimpleAuthenticator
 from singer_sdk.streams import RESTStream
 
 from tap_zammad.paginators import ZammadAPIPaginator
-
-SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
 
 
 class ZammadStream(RESTStream):
@@ -53,8 +50,8 @@ class ZammadStream(RESTStream):
                 for the current iteration, or `None` if it's the first iteration.
 
         Returns:
-            A dictionary containing the URL parameters to be used for the current iteration.
-
+            A dictionary containing the URL parameters to be used
+            for the current iteration.
         """
         if next_page_token is not None:
             return next_page_token
@@ -69,7 +66,8 @@ class ZammadStream(RESTStream):
         since = self.get_starting_timestamp(context)
         # Zammad seems to treat a timestamp as if it was
         # one hour in the past (eg. 11H00 is treat as 10:00)
-        # so we have to add one hour to UTC timestamp to have the desired datetime filter
+        # so we have to add one hour to UTC timestamp
+        # to have the desired datetime filter
         if since is not None:
             zammad_since = since - timedelta(days=1)
             params["query"] = f"updated_at:>{zammad_since:%Y-%m-%d}"
