@@ -53,18 +53,18 @@ class ZammadAPIPaginator(BaseAPIPaginator):
         next_page = current_page + 1
 
         updated_at_filter = params["query"]
-        updated_at_datetime = datetime.strptime(params["query"][12:], "%Y-%m-%d")
+
         if (current_page * self.max_per_page) % 10_000 == 0:
             last_datetime = self.get_last_updated_at_from_response(
                 response
             ) - timedelta(days=1)
-
+            updated_at_datetime = datetime.strptime(params["query"][12:], "%Y-%m-%d")
             if last_datetime.date() == updated_at_datetime.date():
                 logger.warning(
                     (
                         "It seems that there was too much update the same day."
                         "Currently, due to API limitation is it not possible to retrieve more than 10 000 updates the same day,"
-                        " thus the paginator will move forward to the next day"
+                        " thus the paginator will move forward to the next day."
                     )
                 )
                 last_datetime += timedelta(days=1)

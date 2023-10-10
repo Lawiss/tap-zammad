@@ -11,9 +11,8 @@
             "module": "tap_zammad.tap",
             "args": [
                 "--config",
-                ".secrets/zammad-config.json",
+                "${workspaceFolder}/.secrets/zammad-config.json",
             ],
-            "python": "${command:python.interpreterPath}",
             "justMyCode": false
         }
     ]
